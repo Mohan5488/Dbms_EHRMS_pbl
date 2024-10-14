@@ -60,6 +60,7 @@ def login(request):
         return render(request,'Login.html')
     
 def logout(request):
+    request.session.flush() 
     return redirect('index')
 
 def signup(request):
