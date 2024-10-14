@@ -2,12 +2,19 @@ from django.shortcuts import render,redirect
 from index.models import patient,doctor,PatientInformation
 from .models import records,appointment
 from django.http import HttpResponse
-# Create your views here.
+from django.contrib.auth.decorators import login_required
+from .decorators import patient_login_required,doctor_login_required
+@patient_login_required
 def patientDashboard(request):
+    print(f"Session data: {request.session.items()}")
+    if 'patient_id' not in request.session:
+        return redirect('login') 
     pid = request.session.get('patient_id')
     pname = request.session.get('patient_name')
-    if not pid:
+
+    if not pid:  
         return redirect('login')
+    
     try:
         patient_info = PatientInformation.objects.get(patient_id_id = pid)
     except PatientInformation.DoesNotExist:
@@ -116,7 +123,7 @@ def patientDashboard(request):
                                                     'records': records_object,
                                                     'appointments': appointment_object
                                                     })
-
+@doctor_login_required
 def doctorDashboard(request):
     did = request.session.get('doctor_id')
     dname = request.session.get('doctor_name')
@@ -213,6 +220,7 @@ def appointment_view(request):
     return render(request, 'patient_interface.html')
 
 def logout(request):
+    request.session.flush()
     return redirect('index')
 
 def records_view2(request):
